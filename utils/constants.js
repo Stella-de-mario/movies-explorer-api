@@ -1,5 +1,5 @@
 const { celebrate, Joi } = require('celebrate');
-// eslint-disable-next-line no-useless-escape
+
 const regexUrl = /^https?:\/\/(www\.)?[a-zA-z\d\-]+\.[\w\d\-\._~:\/?#\[\]@!\$&'\(\)*\+,;=]{2,}#?$/;
 
 const allowedCors = [
@@ -22,7 +22,7 @@ const validateLogin = celebrate({
 
 const validateCreateUser = celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
+    name: Joi.string().required().min(2).max(30),
     email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
@@ -30,7 +30,7 @@ const validateCreateUser = celebrate({
 
 const validateUpdateUser = celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30).required(),
+    name: Joi.string().required().min(2).max(30),
     email: Joi.string().required().email(),
   }),
 });

@@ -8,32 +8,32 @@ const NotFoundError = require('../utils/errors/NotFoundError');
 const UnauthorizedError = require('../utils/errors/UnauthorizedError');
 const InternalServerError = require('../utils/errors/InternalServerError');
 
+const { JWT_DEV_KEY } = require('../utils/config');
+
 const { NODE_ENV, JWT_SECRET } = process.env;
 
 module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   User.findOne({ email })
     .select('+password')
-    // eslint-disable-next-line consistent-return
     .then((user) => {
       if (!user) {
         return next(new UnauthorizedError('Неправильные почта или пароль'));
       }
-      // eslint-disable-next-line consistent-return
       bcrypt.compare(password, user.password).then((isUserValid) => {
         if (isUserValid) {
           const token = jwt.sign(
             {
               _id: user._id,
             },
-            NODE_ENV === 'production' ? JWT_SECRET : 'secret-key',
+            NODE_ENV === 'production' ? JWT_SECRET : JWT_DEV_KEY,
           );
           res.cookie('jwt', token, {
             maxAge: 3600000 * 24 * 7,
             httpOnly: true,
             sameSite: true,
           });
-          res.send({ data: user.toJSON() });
+          res.send({ data: user });
         } else {
           return next(new UnauthorizedError('Неправильные почта или пароль'));
         }
@@ -43,12 +43,6 @@ module.exports.login = (req, res, next) => {
 };
 
 module.exports.logOut = async (req, res) => res.status(200).clearCookie('jwt').send({});
-
-module.exports.getUsers = (req, res, next) => {
-  User.find({})
-    .then((users) => res.send(users))
-    .catch(next);
-};
 
 module.exports.getCurrentUser = (req, res, next) => {
   User.findById(req.user)
@@ -78,7 +72,6 @@ module.exports.createUser = (req, res, next) => {
         email,
         password: hashedPassword,
       })
-      // eslint-disable-next-line no-shadow
         .then((user) => res.status(201).send(user))
         .catch((err) => {
           if (err.code === 11000) {
@@ -92,22 +85,6 @@ module.exports.createUser = (req, res, next) => {
     })
     .catch(next);
 };
-
-// module.exports.getUserId = (req, res, next) => {
-//   User.findById(req.params.userId)
-//     .then((user) => {
-//       if (!user) {
-//         return next(new NotFoundError('Пользователь с указанным id не найден'));
-//       }
-//       return res.send(user);
-//     })
-//     .catch((err) => {
-//       if (err.name === 'CastError') {
-//         return next(new BadRequestError('Переданы некорректные данные'));
-//       }
-//       return next(new InternalServerError('Произошла ошибка на сервере'));
-//     });
-// };
 
 module.exports.updateUser = (req, res, next) => {
   const { name, email } = req.body;
@@ -127,7 +104,9 @@ module.exports.updateUser = (req, res, next) => {
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError' || err.name === 'ValidationError') {
+      if (err.code === 11000) {
+        next(new ConflictingRequestError('Пользователь с таким email уже зарегистрирован'));
+      } else if (err.name === 'CastError' || err.name === 'ValidationError') {
         next(new BadRequestError('Переданы некорректные данные'));
       } else {
         next(err);

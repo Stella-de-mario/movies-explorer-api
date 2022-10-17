@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const validator = require('validator');
 const UnauthorizedError = require('../utils/errors/UnauthorizedError');
-const InternalServerError = require('../utils/errors/InternalServerError');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -14,6 +13,7 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: [true, 'Поле "email" должно быть заполнено'],
+    unique: true,
     validate: {
       validator(v) {
         return validator.isEmail(v);
@@ -23,19 +23,18 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
+    minlength: 6,
     required: [true, 'Поле "password" должно быть заполнено'],
     select: false,
   },
 }, { versionKey: false });
 
-// eslint-disable-next-line func-names
 userSchema.methods.toJSON = function () {
   const user = this.toObject();
   delete user.password;
   return user;
 };
 
-// eslint-disable-next-line func-names
 userSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email })
     .select('+password')

@@ -1,4 +1,5 @@
 require('dotenv').config();
+
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -8,17 +9,14 @@ const helmet = require('helmet');
 const { errors } = require('celebrate');
 const cors = require('./middlewares/cors');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-const { login, createUser, logOut } = require('./controllers/users');
-const { validateLogin, validateCreateUser } = require('./utils/constants');
-const auth = require('./middlewares/auth');
+
+const router = require('./routes');
 const limiter = require('./middlewares/rateLimit');
-const NotFoundError = require('./utils/errors/NotFoundError');
 const errorHandler = require('./middlewares/errorHandler');
+const { mongoAddress } = require('./utils/config');
 
 const { PORT = 3000, NODE_ENV, MONGO_URL } = process.env;
 const app = express();
-
-app.use(limiter);
 
 app.use(helmet());
 app.use(bodyParser.json());
@@ -27,6 +25,8 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(cors);
 app.use(requestLogger);
+app.use(limiter);
+app.use(router);
 
 app.get('/crash-test', () => {
   setTimeout(() => {
@@ -34,24 +34,12 @@ app.get('/crash-test', () => {
   }, 0);
 });
 
-app.post('/signin', validateLogin, login);
-app.post('/signup', validateCreateUser, createUser);
-app.delete('/signout', logOut);
-
-app.use(auth);
-
-app.use('/movies', require('./routes/movies'));
-app.use('/users', require('./routes/users'));
-
-app.use((req, res, next) => {
-  next(new NotFoundError('Запрашиваемая страница не найдена'));
-});
 app.use(errorLogger);
 app.use(errors());
 app.use(errorHandler);
 
 async function main() {
-  await mongoose.connect(NODE_ENV === 'production' ? MONGO_URL : 'mongodb://localhost:27017/moviesdb', {
+  await mongoose.connect(NODE_ENV === 'production' ? MONGO_URL : mongoAddress, {
   useNewUrlParser: true,
   useUnifiedTopology: false,
 });
