@@ -1,4 +1,4 @@
-const router = require('express').Router();
+const movieRouter = require('express').Router();
 
 const {
   getMovie,
@@ -11,8 +11,8 @@ const {
   validateDeleteMovie
 } = require('../utils/constants');
 
-router.get('/', getMovie);
-router.post('/', validateCreateMovie, createMovie);
-router.delete('/:movieId', validateDeleteMovie, deleteMovie);
+movieRouter.get('/movies', getMovie);
+movieRouter.post('/movies', validateCreateMovie, createMovie);
+movieRouter.delete('/movies/:movieId', validateDeleteMovie, deleteMovie);
 
-module.exports = router;
+module.exports = movieRouter;
