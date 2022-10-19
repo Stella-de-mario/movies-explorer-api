@@ -23,7 +23,6 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    minlength: 6,
     required: [true, 'Поле "password" должно быть заполнено'],
     select: false,
   },
@@ -33,21 +32,6 @@ userSchema.methods.toJSON = function () {
   const user = this.toObject();
   delete user.password;
   return user;
-};
-
-userSchema.statics.findUserByCredentials = function (email, password) {
-  return this.findOne({ email })
-    .select('+password')
-    .orFail(() => {
-      throw new UnauthorizedError('Неправильные почта или пароль');
-    })
-    .then((user) => bcrypt.compare(password, user.password)
-      .then((matched) => {
-        if (!matched) {
-          throw new UnauthorizedError('Неправильные почта или пароль');
-        }
-        return user;
-      }));
 };
 
 module.exports = mongoose.model('user', userSchema);

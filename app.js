@@ -10,7 +10,7 @@ const { errors } = require('celebrate');
 const cors = require('./middlewares/cors');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
-const router = require('./routes/index');
+const router = require('./routes');
 const limiter = require('./middlewares/rateLimit');
 const errorHandler = require('./middlewares/errorHandler');
 const { mongoAddress } = require('./utils/config');
