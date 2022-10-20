@@ -10,6 +10,7 @@ const NotFoundError = require('../utils/errors/NotFoundError');
 
 router.post('/signin', validateLogin, login);
 router.post('/signup', validateCreateUser, createUser);
+
 router.delete('/signout', logOut);
 
 
