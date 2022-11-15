@@ -1,6 +1,6 @@
 const { celebrate, Joi } = require('celebrate');
 
-const regexUrl = /^https?:\/\/(www\.)?[a-zA-z\d\-]+\.[\w\d\-\._~:\/?#\[\]@!\$&'\(\)*\+,;=]{2,}#?$/;
+const regexUrl = /^https?:\/\/(www\.)?[a-zA-z\d-]+\.[\w\d\-._~:/?#[\]@!$&'()*+,;=]{2,}#?$/;
 
 const allowedCors = [
   'http://localhost:3000',
