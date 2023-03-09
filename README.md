@@ -1,7 +1,7 @@
 # movies-explorer-api
 
 ## Backend of the Movies explorer
-### Дипломная работа by Yandex.Practicum
+### Дипломная работа by @Yandex.Practicum
 
 ### Ссылки 
 IP 51.250.73.45
